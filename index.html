@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тесты</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, system-ui, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh; padding: 20px; color: #333;
+  }
+  .container {
+    max-width: 700px; margin: 0 auto; background: #fff;
+    border-radius: 16px; padding: 28px; box-shadow: 0 10px 40px rgba(0,0,0,.2);
+  }
+  h1 { margin-bottom: 20px; font-size: 1.6rem; }
+  h2 { margin-bottom: 16px; font-size: 1.2rem; }
+  h3 { margin: 14px 0 8px; font-size: 1rem; }
+  button {
+    padding: 12px 20px; border: none; border-radius: 10px;
+    background: #667eea; color: #fff; font-size: 1rem;
+    cursor: pointer; transition: .2s; margin: 4px 0;
+    font-family: inherit;
+  }
+  button:hover:not(:disabled) { background: #5568d3; }
+  button.secondary { background: #e0e0e0; color: #333; }
+  button.secondary:hover:not(:disabled) { background: #d0d0d0; }
+  button.danger { background: #e74c3c; }
+  button.danger:hover:not(:disabled) { background: #c0392b; }
+  button.small { padding: 8px 12px; font-size: .9rem; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+
+  .option {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; text-align: left; padding: 14px 16px;
+    background: #f5f5f5; border: 2px solid transparent;
+    border-radius: 10px; margin: 8px 0; cursor: pointer;
+    transition: .15s; color: #333; font-size: 1rem;
+    font-family: inherit;
+  }
+  .option:hover:not(:disabled) { background: #eaeaea; }
+  .option.selected { background: #e8ecff; border-color: #667eea; }
+  .option.correct { background: #d4edda; border-color: #28a745; }
+  .option.wrong { background: #f8d7da; border-color: #dc3545; }
+  .option:disabled { cursor: default; }
+
+  .marker {
+    flex-shrink: 0; width: 22px; height: 22px;
+    border: 2px solid #aaa; background: #fff;
+    position: relative; transition: .15s;
+  }
+  .marker.radio { border-radius: 50%; }
+  .marker.checkbox { border-radius: 5px; }
+
+  .option.selected .marker { border-color: #667eea; }
+  .option.selected .marker.radio::after {
+    content: ''; position: absolute; inset: 3px;
+    border-radius: 50%; background: #667eea;
+  }
+  .option.selected .marker.checkbox::after {
+    content: '✓'; position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #667eea; font-weight: bold; font-size: 16px;
+  }
+  .option.correct .marker { border-color: #28a745; }
+  .option.correct .marker.radio::after {
+    content: ''; position: absolute; inset: 3px;
+    border-radius: 50%; background: #28a745;
+  }
+  .option.correct .marker.checkbox::after {
+    content: '✓'; position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #28a745; font-weight: bold; font-size: 16px;
+  }
+  .option.wrong .marker { border-color: #dc3545; }
+  .option.wrong .marker.radio::after {
+    content: ''; position: absolute; inset: 3px;
+    border-radius: 50%; background: #dc3545;
+  }
+  .option.wrong .marker.checkbox::after {
+    content: '✓'; position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #dc3545; font-weight: bold; font-size: 16px;
+  }
+
+  .hint-badge {
+    display: inline-block; font-size: .8rem;
+    color: #667eea; background: #e8ecff;
+    padding: 4px 10px; border-radius: 12px;
+    margin-bottom: 12px; font-weight: 500;
+  }
+  .topic-badge {
+    display: inline-block; font-size: .75rem;
+    color: #764ba2; background: #f0e8ff;
+    padding: 3px 10px; border-radius: 10px;
+    margin-left: 8px; font-weight: 500;
+  }
+
+  .progress { color: #666; font-size: .9rem; margin-bottom: 10px; }
+  .feedback { margin-top: 16px; padding: 14px; border-radius: 10px; font-size: .95rem; }
+  .feedback.ok { background: #d4edda; color: #155724; }
+  .feedback.bad { background: #f8d7da; color: #721c24; }
+  input[type=number], input[type=text], select {
+    padding: 10px; border: 2px solid #ddd; border-radius: 8px;
+    font-size: 1rem; width: 100%; margin: 6px 0; font-family: inherit;
+    background: #fff;
+  }
+  input[type=text]:focus, select:focus { outline: none; border-color: #667eea; }
+  .hidden { display: none; }
+  .result-big { font-size: 2.5rem; font-weight: bold; text-align: center; margin: 16px 0; }
+  .review-item { padding: 12px; border-radius: 8px; margin: 8px 0; }
+  .review-item.ok { background: #d4edda; }
+  .review-item.bad { background: #f8d7da; }
+  .menu-btn { display: block; width: 100%; margin: 8px 0; padding: 16px; font-size: 1.05rem; }
+  .hint { color: #888; font-size: .85rem; margin-top: 6px; }
+  label { display: block; margin-top: 12px; font-weight: 500; }
+  .card {
+    border: 1px solid #e0e0e0; border-radius: 12px; padding: 14px;
+    margin: 12px 0; background: #fafafa;
+  }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row input[type=text] { flex: 1; }
+  .checkbox-row { display: flex; gap: 10px; align-items: center; }
+  .checkbox-row input[type=checkbox] { width: 20px; height: 20px; cursor: pointer; }
+  .editor-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .badge { display: inline-block; background: #667eea; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: .75rem; }
+
+  /* ===== ВЫПАДАЮЩИЙ СПИСОК ТЕМ ===== */
+  .dropdown {
+    position: relative;
+    margin: 8px 0 16px;
+  }
+  .dropdown-toggle {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; text-align: left;
+    padding: 12px 16px;
+    background: #f5f5f5; border: 2px solid #ddd;
+    border-radius: 10px; cursor: pointer;
+    font-family: inherit; font-size: 1rem; color: #333;
+    margin: 0;
+    transition: .15s;
+  }
+  .dropdown-toggle:hover { background: #eaeaea; }
+  .dropdown-toggle.open { border-color: #667eea; background: #eef1ff; }
+  .dropdown-toggle .dt-label { flex-shrink: 0; color: #888; font-size: .9rem; }
+  .dropdown-toggle .dt-value {
+    flex: 1; font-weight: 500; color: #333;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .dropdown-toggle .dt-arrow {
+    flex-shrink: 0; color: #667eea; font-size: .9rem;
+    transition: transform .15s;
+  }
+  .dropdown-toggle.open .dt-arrow { transform: rotate(180deg); }
+
+  .dropdown-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: #fff;
+    border: 2px solid #667eea;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    z-index: 50;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 6px 0;
+  }
+  .dropdown-panel .dd-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    user-select: none;
+    transition: .1s;
+  }
+  .dropdown-panel .dd-row:hover { background: #f0f0f0; }
+  .dropdown-panel .dd-row input[type=checkbox] {
+    width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;
+  }
+  .dropdown-panel .dd-row .dd-name { flex: 1; }
+  .dropdown-panel .dd-row .dd-count { color: #888; font-size: .85rem; }
+  .dropdown-panel .dd-row.dd-master {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .dropdown-panel .dd-row.dd-master .dd-name { color: #667eea; }
+  .dropdown-panel .dd-empty {
+    padding: 16px; text-align: center; color: #888;
+  }
+
+  /* ===== НАВИГАЦИЯ РЕДАКТОРА ===== */
+  .nav-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1px solid #eee;
+  }
+  .nav-header .back-btn {
+    background: #e0e0e0; color: #333; padding: 8px 14px;
+    font-size: .9rem;
+  }
+  .nav-header .back-btn:hover { background: #d0d0d0; }
+  .nav-header h2 { flex: 1; margin: 0; font-size: 1.15rem; }
+
+  .topic-card {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; text-align: left;
+    padding: 16px 18px;
+    background: #f5f5f5;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    margin: 8px 0;
+    cursor: pointer;
+    font-family: inherit; font-size: 1rem;
+    transition: .15s;
+  }
+  .topic-card:hover { background: #eaeaea; border-color: #667eea; }
+  .topic-card .topic-card-name { flex: 1; font-weight: 600; color: #333; }
+  .topic-card .topic-card-count { color: #888; font-size: .9rem; }
+  .topic-card .topic-card-arrow { color: #667eea; font-size: 1.2rem; }
+
+  .question-item {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; text-align: left;
+    padding: 14px 16px;
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    margin: 8px 0;
+    cursor: pointer;
+    font-family: inherit; font-size: .95rem;
+    transition: .15s;
+  }
+  .question-item:hover { background: #f0f0f0; border-color: #667eea; }
+  .question-item .q-text {
+    flex: 1;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    color: #333;
+  }
+  .question-item .q-meta { color: #888; font-size: .8rem; flex-shrink: 0; }
+
+  .empty-state { text-align: center; padding: 30px 10px; color: #888; }
+  .editor-actions-sticky {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+    padding-top: 16px; border-top: 1px solid #eee;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📝 Тесты</h1>
+
+  <!-- ГЛАВНОЕ МЕНЮ -->
+  <div id="menu">
+    <button class="menu-btn" onclick="startTest()">▶️ Пройти тест</button>
+    <button class="menu-btn secondary" onclick="openEditorTopics()">⚙️ Редактор вопросов</button>
+    <button class="menu-btn secondary" onclick="showFiles()">📁 Файлы (экспорт / импорт)</button>
+    <p class="hint" id="countInfo"></p>
+  </div>
+
+  <!-- НАСТРОЙКА -->
+  <div id="setup" class="hidden">
+    <h2>Настройка теста</h2>
+
+    <label>Тематики</label>
+    <div class="dropdown" id="topicsDropdown">
+      <button type="button" class="dropdown-toggle" id="topicsToggle" onclick="toggleTopicsPanel()">
+        <span class="dt-value" id="topicsSummary">Все темы</span>
+        <span class="dt-arrow">▾</span>
+      </button>
+      <div class="dropdown-panel hidden" id="topicsPanel"></div>
+    </div>
+
+    <label>Сколько вопросов?</label>
+    <input type="number" id="numQuestions" min="1" value="10">
+    <p class="hint" id="maxInfo"></p>
+
+    <div style="margin-top:16px">
+      <button onclick="beginTest()">Начать</button>
+      <button class="secondary" onclick="showMenu()">Назад</button>
+    </div>
+  </div>
+
+  <!-- ПРОХОЖДЕНИЕ -->
+  <div id="quiz" class="hidden">
+    <div class="progress" id="progress"></div>
+    <h2 id="questionText"></h2>
+    <div>
+      <span id="questionHint" class="hint-badge"></span>
+      <span id="questionTopic" class="topic-badge hidden"></span>
+    </div>
+    <div id="options" style="margin-top:12px"></div>
+    <div id="feedback" class="feedback hidden"></div>
+    <div style="margin-top:16px">
+      <button id="mainBtn" onclick="onMainButton()">Далее →</button>
+    </div>
+  </div>
+
+  <!-- РЕЗУЛЬТАТЫ -->
+  <div id="results" class="hidden">
+    <h2>Результаты</h2>
+    <div class="result-big" id="scoreBig"></div>
+    <div id="review" style="margin-top:16px"></div>
+    <div style="margin-top:20px">
+      <button onclick="startTest()">🔁 Пройти снова</button>
+      <button class="secondary" onclick="showMenu()">В меню</button>
+    </div>
+  </div>
+
+  <!-- РЕДАКТОР: ТЕМЫ -->
+  <div id="editorTopics" class="hidden">
+    <div class="nav-header">
+      <button class="back-btn" onclick="showMenu()">← Меню</button>
+      <h2>Тематики</h2>
+    </div>
+    <div id="topicsList"></div>
+    <div class="editor-actions-sticky">
+      <button onclick="createTopic()">➕ Новая тема</button>
+    </div>
+  </div>
+
+  <!-- РЕДАКТОР: ВОПРОСЫ ТЕМЫ -->
+  <div id="editorQuestions" class="hidden">
+    <div class="nav-header">
+      <button class="back-btn" onclick="openEditorTopics()">← К темам</button>
+      <h2 id="editorQuestionsTitle">Вопросы</h2>
+    </div>
+    <div id="questionsList"></div>
+    <div class="editor-actions-sticky">
+      <button onclick="createQuestion()">➕ Новый вопрос</button>
+    </div>
+  </div>
+
+  <!-- РЕДАКТОР: ОДИН ВОПРОС -->
+  <div id="editorQuestion" class="hidden">
+    <div class="nav-header">
+      <button class="back-btn" onclick="backToQuestions()">← К списку</button>
+      <h2>Редактирование вопроса</h2>
+    </div>
+    <div id="questionEditor"></div>
+    <div class="editor-actions-sticky">
+      <button onclick="saveCurrentQuestion()">💾 Сохранить</button>
+      <button class="danger" onclick="deleteCurrentQuestion()">🗑 Удалить вопрос</button>
+    </div>
+  </div>
+
+  <!-- ФАЙЛЫ -->
+  <div id="files" class="hidden">
+    <h2>📁 Файлы</h2>
+    <p class="hint">Экспорт — сохранить все вопросы в файл. Импорт — загрузить вопросы из такого файла.</p>
+    <div class="editor-actions">
+      <button onclick="exportFile()">⬇️ Экспорт в файл</button>
+      <button onclick="document.getElementById('importInput').click()">⬆️ Импорт из файла</button>
+      <input type="file" id="importInput" accept=".json" style="display:none" onchange="importFile(event)">
+    </div>
+    <div style="margin-top:16px">
+      <button class="secondary" onclick="showMenu()">Назад</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== ХРАНИЛИЩЕ ====== */
+let questions = JSON.parse(localStorage.getItem('quizQuestions') || '[]');
+questions.forEach(q => { if (typeof q.topic !== 'string') q.topic = 'Без тематики'; });
+
+let session = null;
+let selectedTopics = new Set();
+let currentTopic = null;
+let currentQuestionIndex = -1;
+let draftQuestion = null;
+let topicsPanelOpen = false;
+
+const NO_TOPIC = 'Без тематики';
+
+function saveQuestions() {
+  localStorage.setItem('quizQuestions', JSON.stringify(questions));
+  updateCountInfo();
+}
+
+function getAllTopics() {
+  const set = new Set();
+  questions.forEach(q => set.add(q.topic || NO_TOPIC));
+  return [...set].sort((a, b) => a.localeCompare(b, 'ru'));
+}
+
+function countByTopic(topic) {
+  return questions.filter(q => (q.topic || NO_TOPIC) === topic).length;
+}
+
+function updateCountInfo() {
+  const el = document.getElementById('countInfo');
+  el.textContent = questions.length
+    ? `Вопросов в базе: ${questions.length} · тем: ${getAllTopics().length}`
+    : 'Вопросов пока нет — откройте «Редактор» и добавьте первые';
+}
+
+function hideAll() {
+  ['menu','setup','quiz','results','editorTopics','editorQuestions','editorQuestion','files']
+    .forEach(id => document.getElementById(id).classList.add('hidden'));
+}
+
+function showMenu() {
+  hideAll();
+  document.getElementById('menu').classList.remove('hidden');
+  updateCountInfo();
+}
+
+/* ====== НАСТРОЙКА ТЕСТА ====== */
+function startTest() {
+  if (questions.length === 0) {
+    alert('Сначала добавьте вопросы в редакторе');
+    return;
+  }
+  hideAll();
+  document.getElementById('setup').classList.remove('hidden');
+  selectedTopics = new Set(getAllTopics());
+  topicsPanelOpen = false;
+  renderTopicsSummary();
+  renderTopicsPanel();
+  document.getElementById('topicsPanel').classList.add('hidden');
+  document.getElementById('topicsToggle').classList.remove('open');
+  updateSetupInfo();
+}
+
+/* --- Сводка на кнопке --- */
+function renderTopicsSummary() {
+  const all = getAllTopics();
+  const el = document.getElementById('topicsSummary');
+
+  if (all.length === 0) {
+    el.textContent = '— нет тем —';
+    return;
+  }
+
+  if (selectedTopics.size === all.length) {
+    const total = questions.length;
+    el.textContent = `Все темы (${total})`;
+    return;
+  }
+
+  if (selectedTopics.size === 0) {
+    el.textContent = 'Ничего не выбрано';
+    return;
+  }
+
+  const total = questions.filter(q => selectedTopics.has(q.topic || NO_TOPIC)).length;
+  const names = [...selectedTopics].sort((a,b)=>a.localeCompare(b,'ru'));
+
+  if (names.length <= 3) {
+    el.textContent = `${names.join(', ')} (${total})`;
+  } else {
+    el.textContent = `${names.slice(0,2).join(', ')} и ещё ${names.length-2} (${total})`;
+  }
+}
+
+/* --- Панель со списком тем --- */
+function toggleTopicsPanel() {
+  topicsPanelOpen = !topicsPanelOpen;
+  const panel = document.getElementById('topicsPanel');
+  const toggle = document.getElementById('topicsToggle');
+  panel.classList.toggle('hidden', !topicsPanelOpen);
+  toggle.classList.toggle('open', topicsPanelOpen);
+}
+
+function renderTopicsPanel() {
+  const panel = document.getElementById('topicsPanel');
+  panel.innerHTML = '';
+  const all = getAllTopics();
+
+  if (all.length === 0) {
+    panel.innerHTML = '<div class="dd-empty">Нет тем</div>';
+    return;
+  }
+
+  // мастер-чекбокс "Все темы"
+  const master = document.createElement('label');
+  master.className = 'dd-row dd-master';
+  const masterCb = document.createElement('input');
+  masterCb.type = 'checkbox';
+  masterCb.checked = selectedTopics.size === all.length;
+  masterCb.indeterminate = selectedTopics.size > 0 && selectedTopics.size < all.length;
+  masterCb.onchange = () => {
+    selectedTopics = masterCb.checked ? new Set(all) : new Set();
+    renderTopicsPanel();
+    renderTopicsSummary();
+    updateSetupInfo();
+  };
+  const masterName = document.createElement('span');
+  masterName.className = 'dd-name'; masterName.textContent = 'Все темы';
+  const masterCount = document.createElement('span');
+  masterCount.className = 'dd-count'; masterCount.textContent = `${questions.length} вопр.`;
+  master.appendChild(masterCb); master.appendChild(masterName); master.appendChild(masterCount);
+  panel.appendChild(master);
+
+  // отдельные темы
+  all.forEach(topic => {
+    const row = document.createElement('label');
+    row.className = 'dd-row';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = selectedTopics.has(topic);
+    cb.onchange = () => {
+      cb.checked ? selectedTopics.add(topic) : selectedTopics.delete(topic);
+      renderTopicsPanel();
+      renderTopicsSummary();
+      updateSetupInfo();
+    };
+    const name = document.createElement('span');
+    name.className = 'dd-name'; name.textContent = topic;
+    const count = document.createElement('span');
+    count.className = 'dd-count'; count.textContent = `${countByTopic(topic)} вопр.`;
+    row.appendChild(cb); row.appendChild(name); row.appendChild(count);
+    panel.appendChild(row);
+  });
+}
+
+function getFilteredQuestions() {
+  return questions.filter(q => selectedTopics.has(q.topic || NO_TOPIC));
+}
+
+function updateSetupInfo() {
+  const filtered = getFilteredQuestions();
+  const total = filtered.length;
+  const inp = document.getElementById('numQuestions');
+  inp.max = Math.max(1, total);
+  if (parseInt(inp.value) > total) inp.value = total || 1;
+  if (!inp.value || parseInt(inp.value) < 1) inp.value = Math.min(10, total) || 1;
+  document.getElementById('maxInfo').textContent =
+    total === 0 ? '⚠️ В выбранных тематиках нет вопросов'
+                : `Доступно вопросов в выбранных тематиках: ${total}`;
+  document.querySelector('#setup button').disabled = total === 0;
+}
+
+/* Закрытие панели по клику вне её */
+document.addEventListener('click', (e) => {
+  if (!topicsPanelOpen) return;
+  const dd = document.getElementById('topicsDropdown');
+  if (dd && !dd.contains(e.target)) {
+    topicsPanelOpen = false;
+    document.getElementById('topicsPanel').classList.add('hidden');
+    document.getElementById('topicsToggle').classList.remove('open');
+  }
+});
+
+/* ====== ТЕСТ ====== */
+function beginTest() {
+  const filtered = getFilteredQuestions();
+  if (filtered.length === 0) { alert('В выбранных тематиках нет вопросов'); return; }
+  let n = parseInt(document.getElementById('numQuestions').value);
+  if (isNaN(n) || n < 1) n = 1;
+  if (n > filtered.length) n = filtered.length;
+
+  const shuffled = [...filtered].sort(() => Math.random() - 0.5).slice(0, n);
+  session = {
+    items: shuffled.map(q => ({
+      q, order: shuffleIndices(q.options.length),
+      selected: new Set(), answered: false,
+      isCorrect: null, correctFirstTry: null
+    })),
+    index: 0, correctCount: 0
+  };
+  hideAll();
+  document.getElementById('quiz').classList.remove('hidden');
+  renderQuestion();
+}
+
+function shuffleIndices(n) {
+  const arr = [...Array(n).keys()];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function renderQuestion() {
+  const item = session.items[session.index];
+  const q = item.q;
+  const multi = q.correct.length > 1;
+
+  document.getElementById('progress').textContent =
+    `Вопрос ${session.index + 1} из ${session.items.length}`;
+  document.getElementById('questionText').textContent = q.text;
+
+  const hint = document.getElementById('questionHint');
+  hint.textContent = multi ? '☑️ Выберите несколько ответов' : '🔘 Выберите один ответ';
+
+  const topicBadge = document.getElementById('questionTopic');
+  if (q.topic && q.topic !== NO_TOPIC) {
+    topicBadge.textContent = q.topic; topicBadge.classList.remove('hidden');
+  } else topicBadge.classList.add('hidden');
+
+  document.getElementById('feedback').classList.add('hidden');
+  const box = document.getElementById('options'); box.innerHTML = '';
+
+  item.order.forEach(origIdx => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'option';
+    const marker = document.createElement('span');
+    marker.className = 'marker ' + (multi ? 'checkbox' : 'radio');
+    const label = document.createElement('span');
+    label.textContent = q.options[origIdx];
+    btn.appendChild(marker); btn.appendChild(label);
+
+    if (item.answered) {
+      btn.disabled = true;
+      if (q.correct.includes(origIdx)) btn.classList.add('correct');
+      else if (item.selected.has(origIdx)) btn.classList.add('wrong');
+    } else {
+      if (item.selected.has(origIdx)) btn.classList.add('selected');
+      btn.onclick = () => onOptionClick(origIdx);
+    }
+    box.appendChild(btn);
+  });
+
+  if (item.answered) showFeedback(item);
+  updateMainButton();
+}
+
+function onOptionClick(origIdx) {
+  const item = session.items[session.index];
+  const q = item.q;
+  const multi = q.correct.length > 1;
+  if (multi) {
+    item.selected.has(origIdx) ? item.selected.delete(origIdx) : item.selected.add(origIdx);
+  } else {
+    item.selected.clear(); item.selected.add(origIdx);
+  }
+  const buttons = document.getElementById('options').querySelectorAll('.option');
+  buttons.forEach(b => b.classList.remove('selected'));
+  let k = 0;
+  item.order.forEach(idx => { if (item.selected.has(idx)) buttons[k].classList.add('selected'); k++; });
+  updateMainButton();
+}
+
+function updateMainButton() {
+  const item = session.items[session.index];
+  const btn = document.getElementById('mainBtn');
+  if (item.answered) {
+    btn.textContent = (session.index === session.items.length - 1) ? '🏁 Показать результаты' : 'Далее →';
+    btn.disabled = false;
+  } else {
+    btn.textContent = '✅ Проверить';
+    btn.disabled = item.selected.size === 0;
+  }
+}
+
+function onMainButton() {
+  const item = session.items[session.index];
+  if (!item.answered) checkAnswer();
+  else {
+    session.index++;
+    if (session.index >= session.items.length) showResults();
+    else renderQuestion();
+  }
+}
+
+function checkAnswer() {
+  const item = session.items[session.index];
+  const q = item.q;
+  const multi = q.correct.length > 1;
+  if (item.selected.size === 0) return;
+
+  const sel = [...item.selected].sort();
+  const cor = [...q.correct].sort();
+  const isCorrect = sel.length === cor.length && sel.every((v,i)=>v===cor[i]);
+
+  item.answered = true;
+  item.isCorrect = isCorrect;
+  item.correctFirstTry = isCorrect;
+  if (isCorrect) session.correctCount++;
+
+  const box = document.getElementById('options'); box.innerHTML = '';
+  item.order.forEach(origIdx => {
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'option'; btn.disabled = true;
+    const marker = document.createElement('span');
+    marker.className = 'marker ' + (multi ? 'checkbox' : 'radio');
+    const label = document.createElement('span');
+    label.textContent = q.options[origIdx];
+    btn.appendChild(marker); btn.appendChild(label);
+    if (q.correct.includes(origIdx)) btn.classList.add('correct');
+    else if (item.selected.has(origIdx)) btn.classList.add('wrong');
+    box.appendChild(btn);
+  });
+  showFeedback(item);
+  updateMainButton();
+}
+
+function showFeedback(item) {
+  const q = item.q;
+  const fb = document.getElementById('feedback');
+  fb.classList.remove('hidden');
+  if (item.isCorrect) {
+    fb.className = 'feedback ok'; fb.textContent = '✅ Верно!';
+  } else {
+    fb.className = 'feedback bad';
+    const correctTexts = q.correct.map(i => q.options[i]).join('; ');
+    const yourTexts = [...item.selected].map(i => q.options[i]).join('; ') || '(ничего не выбрано)';
+    fb.innerHTML = `❌ Неверно.<br><b>Ваш ответ:</b> ${yourTexts}<br><b>Правильный:</b> ${correctTexts}`;
+  }
+}
+
+/* ====== РЕЗУЛЬТАТЫ ====== */
+function showResults() {
+  hideAll();
+  document.getElementById('results').classList.remove('hidden');
+  const total = session.items.length;
+  const correct = session.correctCount;
+  const percent = Math.round(correct / total * 100);
+  document.getElementById('scoreBig').textContent = `${correct} / ${total} (${percent}%)`;
+
+  const reviewBox = document.getElementById('review');
+  reviewBox.innerHTML = '<h2 style="font-size:1.1rem;margin-bottom:8px">Разбор ответов</h2>';
+  session.items.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'review-item ' + (item.correctFirstTry ? 'ok' : 'bad');
+    const correctTexts = item.q.correct.map(idx => item.q.options[idx]).join('; ');
+    const topic = item.q.topic && item.q.topic !== NO_TOPIC
+      ? ` <span class="topic-badge">${escapeHtml(item.q.topic)}</span>` : '';
+    let html = `<b>${i+1}. ${escapeHtml(item.q.text)}</b>${topic}<br>`;
+    if (item.correctFirstTry) html += `✅ Верно: ${escapeHtml(correctTexts)}`;
+    else {
+      const yourTexts = [...item.selected].map(idx => item.q.options[idx]).join('; ') || '(пусто)';
+      html += `❌ Ваш ответ: ${escapeHtml(yourTexts)}<br>✅ Правильно: ${escapeHtml(correctTexts)}`;
+    }
+    div.innerHTML = html;
+    reviewBox.appendChild(div);
+  });
+}
+
+function escapeHtml(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ====== РЕДАКТОР: ТЕМЫ ====== */
+function openEditorTopics() {
+  hideAll();
+  document.getElementById('editorTopics').classList.remove('hidden');
+  renderTopicsList();
+}
+
+function renderTopicsList() {
+  const list = document.getElementById('topicsList');
+  list.innerHTML = '';
+  const topics = getAllTopics();
+  if (topics.length === 0) {
+    list.innerHTML = '<div class="empty-state">Пока нет ни одной темы.<br>Нажмите «➕ Новая тема» чтобы начать.</div>';
+    return;
+  }
+  topics.forEach(topic => {
+    const card = document.createElement('button');
+    card.className = 'topic-card';
+    card.innerHTML = `
+      <span class="topic-card-name">📁 ${escapeHtml(topic)}</span>
+      <span class="topic-card-count">${countByTopic(topic)} вопр.</span>
+      <span class="topic-card-arrow">›</span>
+    `;
+    card.onclick = () => openTopicQuestions(topic);
+    list.appendChild(card);
+  });
+}
+
+function createTopic() {
+  const name = prompt('Название новой темы:', '');
+  if (name === null) return;
+  const t = name.trim();
+  if (!t) { alert('Название не может быть пустым'); return; }
+  if (getAllTopics().includes(t)) { alert('Такая тема уже есть'); return; }
+  openTopicQuestions(t, true);
+}
+
+/* ====== РЕДАКТОР: ВОПРОСЫ ТЕМЫ ====== */
+function openTopicQuestions(topic, isNew = false) {
+  currentTopic = topic;
+  hideAll();
+  document.getElementById('editorQuestions').classList.remove('hidden');
+  document.getElementById('editorQuestionsTitle').textContent = topic;
+  renderQuestionsList();
+  if (isNew && countByTopic(topic) === 0) createQuestion();
+}
+
+function renderQuestionsList() {
+  const list = document.getElementById('questionsList');
+  list.innerHTML = '';
+  const inTopic = questions
+    .map((q, idx) => ({ q, idx }))
+    .filter(o => (o.q.topic || NO_TOPIC) === currentTopic);
+
+  if (inTopic.length === 0) {
+    list.innerHTML = '<div class="empty-state">В этой теме пока нет вопросов.<br>Нажмите «➕ Новый вопрос».</div>';
+    return;
+  }
+
+  inTopic.forEach(({ q, idx }) => {
+    const item = document.createElement('button');
+    item.className = 'question-item';
+    const correctCount = q.correct.length;
+    const typeLabel = correctCount > 1 ? 'множеств.' : 'один';
+    item.innerHTML = `
+      <span class="q-text">${escapeHtml(q.text || '(без текста)')}</span>
+      <span class="q-meta">${q.options.length} вар. · ${typeLabel}</span>
+    `;
+    item.onclick = () => openQuestionEditor(idx);
+    list.appendChild(item);
+  });
+}
+
+/* ====== РЕДАКТОР: ОДИН ВОПРОС ====== */
+function openQuestionEditor(idx) {
+  currentQuestionIndex = idx;
+  draftQuestion = JSON.parse(JSON.stringify(questions[idx]));
+  hideAll();
+  document.getElementById('editorQuestion').classList.remove('hidden');
+  renderQuestionEditor();
+}
+
+function backToQuestions() {
+  if (currentQuestionIndex >= 0 && draftQuestion &&
+      JSON.stringify(draftQuestion) !== JSON.stringify(questions[currentQuestionIndex])) {
+    if (!confirm('Изменения не сохранены. Выйти без сохранения?')) return;
+  }
+  draftQuestion = null;
+  currentQuestionIndex = -1;
+  openTopicQuestions(currentTopic);
+}
+
+function renderQuestionEditor() {
+  const wrap = document.getElementById('questionEditor');
+  wrap.innerHTML = '';
+  const q = draftQuestion;
+
+  const topicLabel = document.createElement('h3');
+  topicLabel.textContent = 'Тематика';
+  wrap.appendChild(topicLabel);
+
+  const topicWrap = document.createElement('div');
+  const sel = document.createElement('select');
+  const topics = getAllTopics();
+  if (!topics.includes(q.topic)) topics.push(q.topic);
+  sel.innerHTML = topics.map(t =>
+    `<option value="${escapeHtml(t)}"${q.topic===t?' selected':''}>${escapeHtml(t)}</option>`
+  ).join('') + `<option value="__new__">➕ Новая тема…</option>`;
+
+  const newInput = document.createElement('input');
+  newInput.type = 'text';
+  newInput.placeholder = 'Название новой темы';
+  newInput.classList.add('hidden');
+
+  sel.onchange = () => {
+    if (sel.value === '__new__') {
+      newInput.classList.remove('hidden'); newInput.focus();
+    } else {
+      newInput.classList.add('hidden'); newInput.value = '';
+      draftQuestion.topic = sel.value;
+    }
+  };
+  newInput.oninput = () => {
+    const v = newInput.value.trim();
+    draftQuestion.topic = v || NO_TOPIC;
+  };
+  topicWrap.appendChild(sel); topicWrap.appendChild(newInput);
+  wrap.appendChild(topicWrap);
+
+  const textLabel = document.createElement('h3');
+  textLabel.textContent = 'Текст вопроса';
+  wrap.appendChild(textLabel);
+
+  const qInput = document.createElement('input');
+  qInput.type = 'text';
+  qInput.value = q.text;
+  qInput.placeholder = 'Введите текст вопроса';
+  qInput.oninput = () => draftQuestion.text = qInput.value;
+  wrap.appendChild(qInput);
+
+  const varLabel = document.createElement('h3');
+  varLabel.textContent = 'Варианты ответа (галочка = правильный)';
+  wrap.appendChild(varLabel);
+
+  q.options.forEach((opt, oi) => {
+    const row = document.createElement('div');
+    row.className = 'checkbox-row';
+    row.style.marginTop = '6px';
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = q.correct.includes(oi);
+    cb.onchange = () => {
+      if (cb.checked) {
+        if (!draftQuestion.correct.includes(oi)) draftQuestion.correct.push(oi);
+      } else {
+        draftQuestion.correct = draftQuestion.correct.filter(i => i !== oi);
+      }
+      // обновить подсказку типа
+      const th = document.querySelector('#questionEditor .type-hint');
+      if (th) th.textContent = draftQuestion.correct.length > 1
+        ? '☑️ Отмечено несколько правильных → вопрос с множественным выбором'
+        : '🔘 Отмечен один правильный → вопрос с одиночным выбором';
+    };
+
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = opt;
+    inp.placeholder = `Вариант ${oi + 1}`;
+    inp.oninput = () => draftQuestion.options[oi] = inp.value;
+
+    const del = document.createElement('button');
+    del.className = 'small danger';
+    del.textContent = '✕';
+    del.disabled = q.options.length <= 2;
+    del.onclick = () => {
+      if (draftQuestion.options.length <= 2) return;
+      draftQuestion.options.splice(oi, 1);
+      draftQuestion.correct = draftQuestion.correct
+        .filter(i => i !== oi).map(i => i > oi ? i - 1 : i);
+      renderQuestionEditor();
+    };
+
+    row.appendChild(cb); row.appendChild(inp); row.appendChild(del);
+    wrap.appendChild(row);
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'small secondary';
+  addBtn.textContent = '➕ Добавить вариант';
+  addBtn.style.marginTop = '10px';
+  addBtn.onclick = () => { draftQuestion.options.push(''); renderQuestionEditor(); };
+  wrap.appendChild(addBtn);
+
+  const typeHint = document.createElement('p');
+  typeHint.className = 'hint type-hint';
+  typeHint.style.marginTop = '12px';
+  typeHint.textContent = draftQuestion.correct.length > 1
+    ? '☑️ Отмечено несколько правильных → вопрос с множественным выбором'
+    : '🔘 Отмечен один правильный → вопрос с одиночным выбором';
+  wrap.appendChild(typeHint);
+}
+
+function saveCurrentQuestion() {
+  const q = draftQuestion;
+  if (!q.text.trim()) { alert('Введите текст вопроса'); return; }
+  if (q.options.length < 2) { alert('Нужно минимум 2 варианта ответа'); return; }
+  if (q.options.some(o => !o.trim())) { alert('Есть пустой вариант ответа'); return; }
+  if (q.correct.length === 0) { alert('Отметьте хотя бы один правильный ответ'); return; }
+  if (!q.topic || !q.topic.trim()) q.topic = NO_TOPIC;
+
+  questions[currentQuestionIndex] = JSON.parse(JSON.stringify(q));
+  saveQuestions();
+  if (q.topic !== currentTopic) currentTopic = q.topic;
+  draftQuestion = null;
+  currentQuestionIndex = -1;
+  openTopicQuestions(currentTopic);
+}
+
+function deleteCurrentQuestion() {
+  if (!confirm('Удалить этот вопрос?')) return;
+  questions.splice(currentQuestionIndex, 1);
+  saveQuestions();
+  draftQuestion = null;
+  currentQuestionIndex = -1;
+  openTopicQuestions(currentTopic);
+}
+
+function createQuestion() {
+  const blank = { text: '', options: ['', ''], correct: [], topic: currentTopic };
+  questions.push(blank);
+  const newIdx = questions.length - 1;
+  saveQuestions();
+  openQuestionEditor(newIdx);
+}
+
+/* ====== ФАЙЛЫ ====== */
+function showFiles() {
+  hideAll();
+  document.getElementById('files').classList.remove('hidden');
+}
+
+function exportFile() {
+  if (questions.length === 0) { alert('База пуста — нечего экспортировать'); return; }
+  const blob = new Blob([JSON.stringify(questions, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const d = new Date();
+  const stamp = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  a.download = `вопросы-${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('Формат неверный');
+      data.forEach((q, i) => {
+        if (typeof q.text !== 'string' || !Array.isArray(q.options) || !Array.isArray(q.correct))
+          throw new Error(`Вопрос ${i + 1}: неверная структура`);
+        if (typeof q.topic !== 'string') q.topic = NO_TOPIC;
+      });
+      const mode = questions.length === 0 ? 'replace'
+        : (confirm(`В базе уже ${questions.length} вопросов.\n\nOK — ДОБАВИТЬ импортированные к существующим\nОтмена — ЗАМЕНИТЬ всё импортированными`)
+           ? 'append' : 'replace');
+      questions = mode === 'append' ? questions.concat(data) : data;
+      saveQuestions();
+      alert(`Импортировано! Всего вопросов: ${questions.length}`);
+      showMenu();
+    } catch (err) { alert('Ошибка импорта: ' + err.message); }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/* ====== СТАРТ ====== */
+updateCountInfo();
+</script>
+</body>
+</html>
